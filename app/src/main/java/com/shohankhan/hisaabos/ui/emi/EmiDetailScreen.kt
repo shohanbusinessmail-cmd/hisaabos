@@ -213,7 +213,7 @@ fun EmiDetailScreen(emiId: Long, onBack: () -> Unit) {
                     Spacer(Modifier.height(8.dp))
                     DropdownField(Bn.fromWhichAccount, state.accounts, state.accounts.firstOrNull { it.id == accountId }, { it.name }, { accountId = it.id })
                     Spacer(Modifier.height(8.dp))
-                    DateField(Bn.date, date) { date = it }
+                    DateField(Bn.date, date, onSelect = { date = it })
                 }
             },
             confirmButton = {

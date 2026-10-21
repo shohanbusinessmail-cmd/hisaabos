@@ -276,7 +276,7 @@ fun BackupScreen(onBack: () -> Unit, onWiped: () -> Unit) {
                     PrimaryButton(text = Bn.restoreReplace, onClick = {
                         pendingEnvelope?.let { restore(it, RestoreMode.REPLACE_ALL) }
                         askMode = false
-                    }, danger = false)
+                    })
                     Spacer(Modifier.height(8.dp))
                     SecondaryButton(text = Bn.restoreMerge, onClick = {
                         pendingEnvelope?.let { restore(it, RestoreMode.MERGE) }

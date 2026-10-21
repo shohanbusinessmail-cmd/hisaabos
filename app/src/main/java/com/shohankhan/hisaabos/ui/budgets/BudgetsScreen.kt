@@ -230,9 +230,9 @@ fun BudgetsScreen(onBack: () -> Unit) {
                         }
                     }, { period = it })
                     Spacer(Modifier.height(8.dp))
-                    DateField("শুরু", start) { start = it }
+                    DateField("শুরু", start, onSelect = { start = it })
                     Spacer(Modifier.height(8.dp))
-                    DateField("শেষ", end) { end = it }
+                    DateField("শেষ", end, onSelect = { end = it })
                     Spacer(Modifier.height(8.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         CategoryChip("সব ক্যাটাগরি", includeAll) { includeAll = true }

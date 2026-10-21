@@ -273,7 +273,7 @@ fun MainScaffold(appViewModel: AppViewModel, settings: AppSettings) {
                         val vm = appViewModel(key = "add-${entry.id}") { container ->
                             AddTransactionViewModel(container.repository, type, shopId, personId, accountId, null)
                         }
-                        val state by vm.state.collectAsStateWithLifecycle()
+                        val state = vm.state
                         AddTransactionScreen(
                             state = state,
                             onUpdate = vm::update,
@@ -296,7 +296,7 @@ fun MainScaffold(appViewModel: AppViewModel, settings: AppSettings) {
                         val vm = appViewModel(key = "edit-$id") { container ->
                             AddTransactionViewModel(container.repository, TxType.EXPENSE, null, null, null, id)
                         }
-                        val state by vm.state.collectAsStateWithLifecycle()
+                        val state = vm.state
                         AddTransactionScreen(
                             state = state,
                             onUpdate = vm::update,

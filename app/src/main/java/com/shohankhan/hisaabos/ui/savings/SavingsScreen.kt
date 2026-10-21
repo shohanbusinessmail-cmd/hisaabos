@@ -264,7 +264,7 @@ fun SavingsScreen(onBack: () -> Unit) {
                     Spacer(Modifier.height(8.dp))
                     AmountField(value = target, onValueChange = { target = it }, label = "লক্ষ্যমাত্রা (${Bn.optional})")
                     Spacer(Modifier.height(8.dp))
-                    DateField("লক্ষ্যের তারিখ", targetDate) { targetDate = it }
+                    DateField("লক্ষ্যের তারিখ", targetDate, onSelect = { targetDate = it })
                     Spacer(Modifier.height(8.dp))
                     DropdownField("সঞ্চয়ের ধরন", SavingsKind.entries, kind, { savingsKindLabel(it) }, { kind = it })
                     Spacer(Modifier.height(8.dp))
@@ -300,7 +300,7 @@ fun SavingsScreen(onBack: () -> Unit) {
                         onSelect = { accountId = it.id },
                     )
                     Spacer(Modifier.height(8.dp))
-                    DateField(Bn.date, date) { date = it }
+                    DateField(Bn.date, date, onSelect = { date = it })
                 }
             },
             confirmButton = {

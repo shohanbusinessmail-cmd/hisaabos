@@ -235,7 +235,7 @@ fun RemindersScreen(onBack: () -> Unit) {
                 Column {
                     HisaabTextField(value = title, onValueChange = { title = it }, label = Bn.reminderTitle)
                     Spacer(Modifier.height(8.dp))
-                    DateField(Bn.reminderDate, date) { date = it }
+                    DateField(Bn.reminderDate, date, onSelect = { date = it })
                     Spacer(Modifier.height(8.dp))
                     AmountField(value = amount, onValueChange = { amount = it }, label = "টাকার পরিমাণ (${Bn.optional})")
                 }
@@ -269,7 +269,7 @@ fun RemindersScreen(onBack: () -> Unit) {
                     Spacer(Modifier.height(8.dp))
                     DropdownField("কতবার", RecurrenceFrequency.entries, frequency, { frequencyLabel(it) }, { frequency = it })
                     Spacer(Modifier.height(8.dp))
-                    DateField("পরবর্তী তারিখ", next) { next = it }
+                    DateField("পরবর্তী তারিখ", next, onSelect = { next = it })
                 }
             },
             confirmButton = {
