@@ -63,6 +63,21 @@ jobs:
           set -o pipefail
           ./gradlew :app:lintDebug --stacktrace 2>&1 | tee build-lint.log
 
+      - name: Surface lint errors
+        if: always()
+        shell: bash
+        run: |
+          set +e
+          for f in app/build/reports/lint-results-debug.txt app/build/intermediates/lint_intermediate_text_report/debug/lintReportDebug/lint-results-debug.txt; do
+            if [ -f "$f" ]; then
+              echo "== $f =="
+              grep -E "Error:" "$f" | head -n 60 | while IFS= read -r line; do
+                printf '::error file=lint::%s\n' "${line:0:900}"
+              done
+            fi
+          done
+          exit 0
+
       - name: Assemble debug APK
         shell: bash
         run: |
