@@ -5,7 +5,7 @@ import androidx.compose.material.icons.outlined.AccountBalance
 import androidx.compose.material.icons.outlined.Category
 import androidx.compose.material.icons.outlined.DirectionsBus
 import androidx.compose.material.icons.outlined.Fastfood
-import androidx.compose.material.icons.filled.Gift
+import androidx.compose.material.icons.outlined.CardGiftcard
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.LocalHospital
 import androidx.compose.material.icons.outlined.Payments
@@ -25,7 +25,7 @@ val categoryIconOptions: List<CategoryIconOption> = listOf(
     CategoryIconOption("health", "চিকিৎসা", Icons.Outlined.LocalHospital),
     CategoryIconOption("education", "শিক্ষা", Icons.Outlined.School),
     CategoryIconOption("home", "ঘর", Icons.Outlined.Home),
-    CategoryIconOption("gift", "উপহার", Icons.Filled.Gift),
+    CategoryIconOption("gift", "উপহার", Icons.Outlined.CardGiftcard),
     CategoryIconOption("salary", "বেতন", Icons.Outlined.Work),
     CategoryIconOption("shopping", "কেনাকাটা", Icons.Outlined.ShoppingBag),
     CategoryIconOption("bills", "বিল", Icons.Outlined.Receipt),
