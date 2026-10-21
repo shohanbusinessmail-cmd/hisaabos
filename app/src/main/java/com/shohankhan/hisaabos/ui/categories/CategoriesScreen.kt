@@ -267,7 +267,7 @@ fun CategoriesScreen(
             text = {
                 Column {
                     InfoNote(
-                        text = "এই ক্যাটাগরিতে $countটি লেনদেন আছে। মুছলে সেগুলো অন্য ক্যাটাগরিতে সরাতে হবে, নাহলে শুধু আর্কাইভ হবে।",
+                        text = "এই ক্যাটাগরিতে ${count}টি লেনদেন আছে। মুছলে সেগুলো অন্য ক্যাটাগরিতে সরাতে হবে, নাহলে শুধু আর্কাইভ হবে।",
                         tone = NoteTone.WARNING,
                     )
                     Spacer(Modifier.height(8.dp))

@@ -59,7 +59,7 @@ fun LoanDetailScreen(loanId: Long, onBack: () -> Unit) {
     Column(Modifier.fillMaxSize().background(AppBackground)) {
         PageHeader(
             title = state.loan?.institution ?: Bn.loansTitle,
-            subtitle = state.loan?.let { "${it.kind.code} · ${it.model.code}" } ?: "",
+            subtitle = state.loan?.let { Bn.loanKind(it.kind) + " · " + Bn.interestModel(it.model) } ?: "",
             onBack = onBack,
         )
         LazyColumn(Modifier.weight(1f).padding(horizontal = 16.dp)) {

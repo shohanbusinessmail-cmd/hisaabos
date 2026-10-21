@@ -25,7 +25,7 @@ val categoryIconOptions: List<CategoryIconOption> = listOf(
     CategoryIconOption("health", "চিকিৎসা", Icons.Outlined.LocalHospital),
     CategoryIconOption("education", "শিক্ষা", Icons.Outlined.School),
     CategoryIconOption("home", "ঘর", Icons.Outlined.Home),
-    CategoryIconOption("gift", "উপহার", Icons.Outlined.Gift),
+    CategoryIconOption("gift", "উপহার", Icons.Outlined.CardGiftcard),
     CategoryIconOption("salary", "বেতন", Icons.Outlined.Work),
     CategoryIconOption("shopping", "কেনাকাটা", Icons.Outlined.ShoppingBag),
     CategoryIconOption("bills", "বিল", Icons.Outlined.Receipt),
