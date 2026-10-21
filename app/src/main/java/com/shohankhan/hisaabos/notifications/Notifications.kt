@@ -1,6 +1,7 @@
 package com.shohankhan.hisaabos.notifications
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -41,6 +42,7 @@ object Notifications {
             NotificationManagerCompat.from(context).areNotificationsEnabled()
         }
 
+    @SuppressLint("MissingPermission") // guarded by canPost() above
     fun post(context: Context, id: Int, title: String, body: String) {
         if (!canPost(context)) return
         ensureChannels(context)
