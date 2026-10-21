@@ -220,6 +220,7 @@ fun MainScaffold(appViewModel: AppViewModel, settings: AppSettings) {
                             onOpenLoans = { navController.navigate(Routes.LOANS) },
                             onOpenEmi = { navController.navigate(Routes.EMI) },
                             onOpenSavings = { navController.navigate(Routes.SAVINGS) },
+                            onOpenBudgets = { navController.navigate(Routes.BUDGETS) },
                         )
                     }
 
