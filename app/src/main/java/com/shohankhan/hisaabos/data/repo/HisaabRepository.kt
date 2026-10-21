@@ -27,7 +27,9 @@ import com.shohankhan.hisaabos.domain.model.LoanKind
 import com.shohankhan.hisaabos.domain.model.ScheduleOwner
 import com.shohankhan.hisaabos.domain.model.TxType
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 
 /**
@@ -228,9 +230,34 @@ class HisaabRepository(
     fun observeRecurring(): Flow<List<RecurringRuleEntity>> = recurring.observeAll()
     suspend fun recurringRules(): List<RecurringRuleEntity> = recurring.active()
 
-    /** Emits whenever any of the given Room tables change; used by snapshot screens. */
-    fun invalidation(vararg tables: String): Flow<Unit> =
-        db.invalidationTracker.createFlow(*tables).map { }
+    /**
+     * Emits whenever any of the given tables change; used by snapshot screens
+     * that must recompute in-memory aggregates. Room flows already observe the
+     * underlying tables, so this is a merge of the matching primary keys.
+     */
+    fun invalidation(vararg tables: String): Flow<Unit> {
+        val flows = tables.mapNotNull { table ->
+            when (table) {
+                "transactions" -> transactions.observeRecent(1)
+                "accounts" -> accounts.observeAll()
+                "categories" -> categories.observeAll()
+                "shops" -> shops.observeAll()
+                "people" -> people.observeAll()
+                "debts" -> debts.observeAll()
+                "loans" -> loans.observeAll()
+                "emi_purchases" -> emis.observeAll()
+                "savings_plans" -> savings.observeAll()
+                "budgets" -> budgets.observeAll()
+                "reminders" -> reminders.observeAll()
+                "recurring_rules" -> recurring.observeAll()
+                "purchases" -> purchases.observeRecent(1)
+                "schedule_items" -> schedule.observeAll()
+                else -> null
+            } as Flow<Any?>?
+        }
+        if (flows.isEmpty()) return flowOf(Unit)
+        return combine(flows) { }.map { }
+    }
 
     suspend fun recentTransactions(limit: Int): List<TxListItem> = transactions.recent(limit)
     suspend fun allForLinkKind(linkKind: LinkKind) = transactions.allForLinkKind(linkKind)

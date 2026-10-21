@@ -73,12 +73,17 @@ jobs:
         if: always()
         shell: bash
         run: |
+          set +e
           shopt -s nullglob
+          total=0
           for f in build-*.log; do
-            grep -E "^e: |^w: .*error|error:|FAILURE:|Execution failed|Caused by:|^> Task .*FAILED" "$f" | head -n 40 | while IFS= read -r line; do
+            while IFS= read -r line; do
               printf '::error file=%s::%s\n' "$f" "${line:0:900}"
-            done
+              total=$((total + 1))
+            done < <(grep -E "^e: |error:|FAILURE:|Execution failed|Caused by:|^> Task .*FAILED" "$f" | head -n 60)
           done
+          echo "Published $total diagnostic lines."
+          exit 0
 
       - name: Upload build logs
         if: always()

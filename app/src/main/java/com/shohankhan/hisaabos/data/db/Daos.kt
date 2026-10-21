@@ -290,12 +290,6 @@ interface TransactionDao {
     suspend fun allForLinkKind(linkKind: LinkKind): List<TransactionEntity>
 
     @Query("SELECT linkId, SUM(principalMinor) AS principalMinor, SUM(interestMinor) AS interestMinor, SUM(feeMinor) AS feeMinor, SUM(amountMinor) AS amountMinor FROM transactions WHERE isDeleted = 0 AND linkKind = :linkKind AND type = :type AND linkId IS NOT NULL GROUP BY linkId")
-    suspend fun paidByLink(linkKind: LinkKind, type: TxType): List<LinkPaidRow>
-
-    @Query("SELECT * FROM transactions WHERE isDeleted = 0 AND linkKind = :linkKind ORDER BY occurredAt ASC")
-    suspend fun allForLinkKind(linkKind: LinkKind): List<TransactionEntity>
-
-    @Query("SELECT linkId, SUM(principalMinor) AS principalMinor, SUM(interestMinor) AS interestMinor, SUM(feeMinor) AS feeMinor, SUM(amountMinor) AS amountMinor FROM transactions WHERE isDeleted = 0 AND linkKind = :linkKind AND type = :type AND linkId IS NOT NULL GROUP BY linkId")
     fun observePaidByLink(linkKind: LinkKind, type: TxType): Flow<List<LinkPaidRow>>
 
     @Query("SELECT shopId, type, SUM(amountMinor) AS totalMinor FROM transactions WHERE isDeleted = 0 AND shopId IS NOT NULL GROUP BY shopId, type")
