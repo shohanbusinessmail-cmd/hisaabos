@@ -101,6 +101,9 @@ interface CategoryDao {
     @Query("UPDATE categories SET isArchived = :archived WHERE id = :id")
     suspend fun setArchived(id: Long, archived: Boolean)
 
+    @Query("DELETE FROM categories WHERE id = :id")
+    suspend fun deleteById(id: Long)
+
     @Query("UPDATE transactions SET categoryId = :toCategoryId WHERE categoryId = :fromCategoryId")
     suspend fun reassignTransactions(fromCategoryId: Long, toCategoryId: Long?)
 
@@ -283,8 +286,14 @@ interface TransactionDao {
     @Query("SELECT * FROM transactions WHERE isDeleted = 0 AND linkKind = :linkKind AND linkId = :linkId ORDER BY occurredAt ASC, id ASC")
     fun observeForLink(linkKind: LinkKind, linkId: Long): Flow<List<TransactionEntity>>
 
+    @Query("SELECT * FROM transactions WHERE isDeleted = 0 AND linkKind = :linkKind ORDER BY occurredAt ASC")
+    suspend fun allForLinkKind(linkKind: LinkKind): List<TransactionEntity>
+
     @Query("SELECT linkId, SUM(principalMinor) AS principalMinor, SUM(interestMinor) AS interestMinor, SUM(feeMinor) AS feeMinor, SUM(amountMinor) AS amountMinor FROM transactions WHERE isDeleted = 0 AND linkKind = :linkKind AND type = :type AND linkId IS NOT NULL GROUP BY linkId")
     suspend fun paidByLink(linkKind: LinkKind, type: TxType): List<LinkPaidRow>
+
+    @Query("SELECT * FROM transactions WHERE isDeleted = 0 AND linkKind = :linkKind ORDER BY occurredAt ASC")
+    suspend fun allForLinkKind(linkKind: LinkKind): List<TransactionEntity>
 
     @Query("SELECT linkId, SUM(principalMinor) AS principalMinor, SUM(interestMinor) AS interestMinor, SUM(feeMinor) AS feeMinor, SUM(amountMinor) AS amountMinor FROM transactions WHERE isDeleted = 0 AND linkKind = :linkKind AND type = :type AND linkId IS NOT NULL GROUP BY linkId")
     fun observePaidByLink(linkKind: LinkKind, type: TxType): Flow<List<LinkPaidRow>>
@@ -300,6 +309,23 @@ interface TransactionDao {
 
     @Query("SELECT COALESCE(SUM(amountMinor), 0) FROM transactions WHERE isDeleted = 0 AND businessDate = :date AND type = :type")
     suspend fun sumOnDate(date: String, type: TxType): Long
+
+    @Query(
+        """
+        SELECT t.*, a.name AS accountName, ca.name AS counterAccountName, c.name AS categoryName,
+               c.colorArgb AS categoryColor, s.name AS shopName, p.name AS personName
+        FROM transactions t
+        LEFT JOIN accounts a ON a.id = t.accountId
+        LEFT JOIN accounts ca ON ca.id = t.counterAccountId
+        LEFT JOIN categories c ON c.id = t.categoryId
+        LEFT JOIN shops s ON s.id = t.shopId
+        LEFT JOIN people p ON p.id = t.personId
+        WHERE t.isDeleted = 0
+        ORDER BY t.occurredAt DESC, t.id DESC
+        LIMIT :limit
+        """
+    )
+    suspend fun recent(limit: Int): List<TxListItem>
 
     @Query("SELECT COUNT(*) FROM transactions WHERE isDeleted = 0")
     suspend fun countActive(): Int
@@ -436,6 +462,9 @@ interface ScheduleDao {
     @Query("SELECT * FROM schedule_items ORDER BY dueDate ASC")
     fun observeAll(): Flow<List<ScheduleItemEntity>>
 
+    @Query("SELECT * FROM schedule_items ORDER BY dueDate ASC")
+    suspend fun all(): List<ScheduleItemEntity>
+
     @Query("SELECT * FROM schedule_items WHERE ownerKind = :ownerKind AND ownerId = :ownerId ORDER BY dueDate ASC LIMIT 1")
     suspend fun first(ownerKind: ScheduleOwner, ownerId: Long): ScheduleItemEntity?
 
@@ -516,6 +545,9 @@ interface ReminderDao {
 
     @Query("SELECT * FROM reminders WHERE isDone = 0 ORDER BY dueDate ASC")
     fun observeOpen(): Flow<List<ReminderEntity>>
+
+    @Query("SELECT * FROM reminders WHERE isDone = 0 ORDER BY dueDate ASC")
+    suspend fun open(): List<ReminderEntity>
 
     @Query("SELECT * FROM reminders WHERE isDone = 0 AND dueDate <= :date ORDER BY dueDate ASC")
     suspend fun dueBy(date: String): List<ReminderEntity>

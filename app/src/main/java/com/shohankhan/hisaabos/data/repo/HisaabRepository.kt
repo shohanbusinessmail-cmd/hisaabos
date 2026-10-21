@@ -27,6 +27,8 @@ import com.shohankhan.hisaabos.domain.model.LoanKind
 import com.shohankhan.hisaabos.domain.model.ScheduleOwner
 import com.shohankhan.hisaabos.domain.model.TxType
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 
 /**
  * Read side of the app. Screens observe Flows; all writes go through
@@ -52,6 +54,60 @@ class HisaabRepository(
     private val recurring = db.recurringDao()
 
     // ---------------------------------------------------------------- masters
+    suspend fun createAccount(
+        name: String,
+        type: com.shohankhan.hisaabos.domain.model.AccountType,
+        institution: String? = null,
+        isLiability: Boolean = false,
+    ): Long = accounts.insert(
+        AccountEntity(
+            name = name.trim(),
+            type = type,
+            institution = institution?.trim()?.takeIf { it.isNotEmpty() },
+            isLiability = isLiability,
+            sortOrder = accounts.maxSortOrder() + 1,
+        )
+    )
+
+    suspend fun createCategory(name: String, kind: com.shohankhan.hisaabos.domain.model.CategoryKind): Long {
+        val order = categories.maxSortOrder() + 1
+        return categories.insert(
+            CategoryEntity(name = name.trim(), kind = kind, sortOrder = order)
+        )
+    }
+
+    suspend fun createCategoryDetailed(name: String, kind: com.shohankhan.hisaabos.domain.model.CategoryKind, iconKey: String, colorArgb: Long): Long =
+        categories.insert(
+            CategoryEntity(
+                name = name.trim(),
+                kind = kind,
+                iconKey = iconKey,
+                colorArgb = colorArgb,
+                sortOrder = categories.maxSortOrder() + 1,
+            )
+        )
+
+    suspend fun updateCategory(category: CategoryEntity) = categories.update(category)
+
+    suspend fun archiveCategory(id: Long, archived: Boolean) = categories.setArchived(id, archived)
+
+    suspend fun deleteCategory(id: Long) = categories.deleteById(id)
+
+    suspend fun categoryUsage(id: Long): Int = categories.usageCount(id)
+
+    suspend fun countCategoryName(name: String, kind: com.shohankhan.hisaabos.domain.model.CategoryKind, excludeId: Long): Int =
+        categories.countWithName(name, kind.name, excludeId)
+
+    suspend fun reassignCategory(fromId: Long, toId: Long?) = categories.reassignTransactions(fromId, toId)
+
+    suspend fun createShop(name: String): Long = shops.insert(ShopEntity(name = name.trim()))
+
+    suspend fun createPerson(name: String): Long = people.insert(PersonEntity(name = name.trim()))
+
+    suspend fun updateAccount(account: AccountEntity) = accounts.update(account)
+
+    suspend fun archiveAccount(id: Long, archived: Boolean) = accounts.setArchived(id, archived)
+
     fun observeAccounts(): Flow<List<AccountEntity>> = accounts.observeAll()
     fun observeActiveAccounts(): Flow<List<AccountEntity>> = accounts.observeActive()
     fun observeAccount(id: Long): Flow<AccountEntity?> = accounts.observeById(id)
@@ -171,6 +227,24 @@ class HisaabRepository(
     fun observeOpenReminders(): Flow<List<ReminderEntity>> = reminders.observeOpen()
     fun observeRecurring(): Flow<List<RecurringRuleEntity>> = recurring.observeAll()
     suspend fun recurringRules(): List<RecurringRuleEntity> = recurring.active()
+
+    /** Emits whenever any of the given Room tables change; used by snapshot screens. */
+    fun invalidation(vararg tables: String): Flow<Unit> =
+        db.invalidationTracker.createFlow(*tables).map { }
+
+    suspend fun recentTransactions(limit: Int): List<TxListItem> = transactions.recent(limit)
+    suspend fun allForLinkKind(linkKind: LinkKind) = transactions.allForLinkKind(linkKind)
+    suspend fun allSchedule(): List<ScheduleItemEntity> = schedule.all()
+    suspend fun openReminders(): List<ReminderEntity> = reminders.open()
+    suspend fun openLoans(): List<LoanEntity> = loans.open()
+    suspend fun openEmis(): List<EmiEntity> = emis.open()
+    suspend fun openDebts(): List<DebtEntity> = debts.open()
+    suspend fun allCategories(): List<CategoryEntity> = categories.active()
+    suspend fun allShops(): List<ShopEntity> = shops.active()
+    suspend fun allPeople(): List<PersonEntity> = people.observeAll().first()
+    suspend fun allSavings(): List<SavingsPlanEntity> = savings.observeAll().first()
+    fun observeShopTotalsList(): Flow<List<ShopTotalRow>> = transactions.observeShopTotals()
+    suspend fun categoryTotals(from: String, to: String) = transactions.categoryTotals(from, to)
 
     // ------------------------------------------------------------- integrity
     suspend fun verifyIntegrity() = service.verifyIntegrity()

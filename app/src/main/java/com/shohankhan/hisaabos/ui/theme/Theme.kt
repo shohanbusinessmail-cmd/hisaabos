@@ -101,6 +101,7 @@ fun HisaabTheme(content: @Composable () -> Unit) {
     MaterialTheme(
         colorScheme = HisaabLightColors,
         typography = HisaabTypography,
+        shapes = HisaabShapes,
         content = content,
     )
 }

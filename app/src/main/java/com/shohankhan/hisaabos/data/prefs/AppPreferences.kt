@@ -10,6 +10,7 @@ import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 
 /** Only non-financial UI/security preferences live here. Money always lives in Room. */
@@ -83,6 +84,9 @@ class AppPreferences(private val context: Context) {
             startupTab = prefs[Keys.startupTab] ?: 0,
         )
     }
+
+    /** Fresh read used by security operations; never cached across a PIN check. */
+    suspend fun read(): AppSettings = settings.first()
 
     suspend fun completeOnboarding() = edit { it[Keys.onboardingCompleted] = true }
 
