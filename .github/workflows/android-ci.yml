@@ -73,7 +73,7 @@ jobs:
               echo "== $f =="
               grep -E "Error:" "$f" | head -n 60 | while IFS= read -r line; do
                 printf '::error file=lint::%s\n' "${line:0:900}"
-              done
+              done || true
             fi
           done
           exit 0

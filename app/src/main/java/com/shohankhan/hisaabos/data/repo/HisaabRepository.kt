@@ -57,21 +57,6 @@ class HisaabRepository(
     private val recurring = db.recurringDao()
 
     // ---------------------------------------------------------------- masters
-    suspend fun createAccount(
-        name: String,
-        type: com.shohankhan.hisaabos.domain.model.AccountType,
-        institution: String? = null,
-        isLiability: Boolean = false,
-    ): Long = accounts.insert(
-        AccountEntity(
-            name = name.trim(),
-            type = type,
-            institution = institution?.trim()?.takeIf { it.isNotEmpty() },
-            isLiability = isLiability,
-            sortOrder = accounts.maxSortOrder() + 1,
-        )
-    )
-
     suspend fun createCategory(name: String, kind: com.shohankhan.hisaabos.domain.model.CategoryKind): Long {
         val order = categories.maxSortOrder() + 1
         return categories.insert(
