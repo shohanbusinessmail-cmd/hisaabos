@@ -3,7 +3,6 @@ package com.shohankhan.hisaabos.ui.books
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -34,15 +33,10 @@ import androidx.compose.ui.unit.dp
 import com.shohankhan.hisaabos.domain.model.Money
 import com.shohankhan.hisaabos.domain.report.FinanceSnapshot
 import com.shohankhan.hisaabos.ui.components.AmountText
-import com.shohankhan.hisaabos.ui.components.DividerLine
 import com.shohankhan.hisaabos.ui.components.HisaabCard
-import com.shohankhan.hisaabos.ui.components.IconBadge
-import com.shohankhan.hisaabos.ui.components.ProgressTrack
-import com.shohankhan.hisaabos.ui.components.SectionHeader
 import com.shohankhan.hisaabos.ui.text.Bn
 import com.shohankhan.hisaabos.ui.theme.AppBackground
 import com.shohankhan.hisaabos.ui.theme.Emerald
-import com.shohankhan.hisaabos.ui.theme.EmeraldDeep
 import com.shohankhan.hisaabos.ui.theme.ExpenseRed
 import com.shohankhan.hisaabos.ui.theme.TextPrimary
 import com.shohankhan.hisaabos.ui.theme.TextSecondary
@@ -57,131 +51,59 @@ fun BooksScreen(
     onOpenLoans: () -> Unit,
     onOpenEmi: () -> Unit,
     onOpenSavings: () -> Unit,
+    onOpenBudgets: () -> Unit,
 ) {
-    val position = snapshot.position
     Column(
-        Modifier
-            .fillMaxSize()
-            .background(AppBackground)
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 16.dp),
+        Modifier.fillMaxSize().background(AppBackground).verticalScroll(rememberScrollState()).padding(16.dp),
     ) {
-        Spacer(Modifier.height(16.dp))
         Text(Bn.navBooks, style = MaterialTheme.typography.headlineSmall, color = TextPrimary)
-        Text("আপনার সব হিসাব, দোকান, ঋণ ও সঞ্চয় এক জায়গায়", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
+        Text("আপনার সব হিসাব, তালিকা ও পরিকল্পনা", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
         Spacer(Modifier.height(14.dp))
-
         HisaabCard {
-            Row {
-                Column(Modifier.weight(1f)) {
-                    Text(Bn.netWorth, style = MaterialTheme.typography.labelMedium, color = TextSecondary)
-                    AmountText(minor = position.netWorthMinor, style = MaterialTheme.typography.titleLarge, color = EmeraldDeep)
-                }
-                Column(Modifier.weight(1f)) {
-                    Text(Bn.availableCash, style = MaterialTheme.typography.labelMedium, color = TextSecondary)
-                    AmountText(minor = position.cashAndBankMinor, style = MaterialTheme.typography.titleMedium, color = TextPrimary)
-                }
-            }
+            Text("মোট সম্পদ", style = MaterialTheme.typography.labelMedium, color = TextSecondary)
+            AmountText(minor = snapshot.position.totalAssetsMinor, style = MaterialTheme.typography.headlineSmall, color = TextPrimary)
             Spacer(Modifier.height(10.dp))
-            DividerLine()
-            Spacer(Modifier.height(10.dp))
-            Row {
-                MiniStat("সম্পদ", position.totalAssetsMinor, Modifier.weight(1f))
-                MiniStat("দায়", position.totalLiabilitiesMinor, Modifier.weight(1f), ExpenseRed)
-                MiniStat("সঞ্চয়", position.savingsMinor, Modifier.weight(1f))
+            Column {
+                KeyValueRow("দায়", Money.format(snapshot.position.totalLiabilitiesMinor))
+                KeyValueRow("নিট মূল্য", Money.format(snapshot.position.netWorthMinor), valueColor = Emerald)
+                KeyValueRow("দোকানে বাকি", Money.format(snapshot.position.shopPayableMinor), valueColor = ExpenseRed)
+                KeyValueRow("আমার পাওনা", Money.format(snapshot.position.receivableMinor), valueColor = Emerald)
+                KeyValueRow("আমার দেনা", Money.format(snapshot.position.borrowedOutstandingMinor), valueColor = ExpenseRed)
             }
         }
-
-        Spacer(Modifier.height(16.dp))
-        SectionHeader(title = "হিসাব ও তালিকা")
-        HisaabCard(contentPadding = PaddingValues(vertical = 4.dp)) {
-            BooksRow(Icons.Outlined.Wallet, Bn.accounts, "${snapshot.accounts.count { !it.account.isArchived }}টি হিসাব", onOpenAccounts)
-            DividerLine(Modifier.padding(horizontal = 16.dp))
-            BooksRow(
-                Icons.Outlined.Storefront,
-                Bn.shops,
-                if (position.shopPayableMinor > 0) "বাকি ${Money.format(position.shopPayableMinor)}" else "কোনো বাকি নেই",
-                onOpenShops,
-            )
-            DividerLine(Modifier.padding(horizontal = 16.dp))
-            BooksRow(
-                Icons.Outlined.People,
-                Bn.people,
-                if (position.receivableMinor > 0) "পাওনা ${Money.format(position.receivableMinor)}" else "দেনা-পাওনা দেখুন",
-                onOpenPeople,
-            )
-            DividerLine(Modifier.padding(horizontal = 16.dp))
-            BooksRow(Icons.Outlined.Category, Bn.categories, "নিজের তৈরি ক্যাটাগরি", onOpenCategories)
-        }
-
-        Spacer(Modifier.height(16.dp))
-        SectionHeader(title = Bn.planningGroup)
-        HisaabCard(contentPadding = PaddingValues(vertical = 4.dp)) {
-            BooksRow(
-                Icons.Outlined.AccountBalance,
-                Bn.loansTitle,
-                if (snapshot.loans.any { !it.loan.isClosed }) "ঋণ চলছে" else "কোনো সক্রিয় ঋণ নেই",
-                onOpenLoans,
-            )
-            DividerLine(Modifier.padding(horizontal = 16.dp))
-            BooksRow(
-                Icons.Outlined.CreditCard,
-                Bn.emiPurchase,
-                if (snapshot.emis.any { !it.emi.isSettled }) "কিস্তি চলছে" else "কোনো কিস্তি নেই",
-                onOpenEmi,
-            )
-            DividerLine(Modifier.padding(horizontal = 16.dp))
-            BooksRow(
-                Icons.Outlined.Savings,
-                Bn.savings,
-                if (snapshot.savings.isEmpty()) "লক্ষ্য ঠিক করুন" else "${snapshot.savings.size}টি পরিকল্পনা",
-                onOpenSavings,
-            )
-        }
-
-        if (snapshot.savings.any { it.plan.targetAmountMinor != null }) {
-            Spacer(Modifier.height(16.dp))
-            SectionHeader(title = Bn.goalProgress)
-            snapshot.savings.filter { it.plan.targetAmountMinor != null }.take(3).forEach { goal ->
-                HisaabCard(modifier = Modifier.padding(bottom = 8.dp)) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(goal.plan.name, style = MaterialTheme.typography.titleSmall, color = TextPrimary, modifier = Modifier.weight(1f))
-                        Text("${goal.progressPercent}%", style = MaterialTheme.typography.labelMedium, color = Emerald)
-                    }
-                    Spacer(Modifier.height(6.dp))
-                    ProgressTrack(progress = goal.progressPercent / 100f)
-                    Spacer(Modifier.height(4.dp))
-                    AmountText(minor = goal.balanceMinor, style = MaterialTheme.typography.bodySmall, color = TextSecondary)
-                }
-            }
-        }
+        Spacer(Modifier.height(18.dp))
+        Text("হিসাব", style = MaterialTheme.typography.titleSmall, color = TextPrimary)
+        EntryRow(Bn.accounts, Icons.Outlined.Wallet, onOpenAccounts)
+        EntryRow(Bn.categories, Icons.Outlined.Category, onOpenCategories)
+        EntryRow(Bn.shops, Icons.Outlined.Storefront, onOpenShops)
+        EntryRow(Bn.people, Icons.Outlined.People, onOpenPeople)
+        Spacer(Modifier.height(14.dp))
+        Text("পরিকল্পনা", style = MaterialTheme.typography.titleSmall, color = TextPrimary)
+        EntryRow(Bn.loansTitle, Icons.Outlined.AccountBalance, onOpenLoans)
+        EntryRow(Bn.emiPurchase, Icons.Outlined.CreditCard, onOpenEmi)
+        EntryRow(Bn.savings, Icons.Outlined.Savings, onOpenSavings)
+        EntryRow(Bn.budgets, Icons.Outlined.Category, onOpenBudgets)
         Spacer(Modifier.height(96.dp))
     }
 }
 
 @Composable
-private fun MiniStat(label: String, value: Long, modifier: Modifier = Modifier, color: Color = TextPrimary) {
-    Column(modifier) {
-        Text(label, style = MaterialTheme.typography.labelSmall, color = TextSecondary)
-        AmountText(minor = value, style = MaterialTheme.typography.bodyMedium, color = color)
+private fun EntryRow(label: String, icon: ImageVector, onClick: () -> Unit) {
+    HisaabCard(modifier = Modifier.padding(bottom = 8.dp).clickable { onClick() }) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(icon, contentDescription = null, tint = Emerald, modifier = Modifier.width(24.dp))
+            Spacer(Modifier.width(12.dp))
+            Text(label, style = MaterialTheme.typography.bodyLarge, color = TextPrimary)
+            Spacer(Modifier.width(8.dp))
+            Icon(Icons.Outlined.ChevronRight, contentDescription = null, tint = TextSecondary)
+        }
     }
 }
 
 @Composable
-private fun BooksRow(icon: ImageVector, title: String, subtitle: String, onClick: () -> Unit) {
-    Row(
-        Modifier
-            .fillMaxWidth()
-            .clickable { onClick() }
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        IconBadge(icon = icon, size = 38)
-        Spacer(Modifier.width(10.dp))
-        Column(Modifier.weight(1f)) {
-            Text(title, style = MaterialTheme.typography.bodyLarge, color = TextPrimary)
-            Text(subtitle, style = MaterialTheme.typography.bodySmall, color = TextSecondary, maxLines = 1)
-        }
-        Icon(Icons.Outlined.ChevronRight, contentDescription = null, tint = TextSecondary)
+private fun KeyValueRow(label: String, value: String, valueColor: Color = TextPrimary) {
+    Row(Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
+        Text(label, style = MaterialTheme.typography.bodySmall, color = TextSecondary, modifier = Modifier.weight(1f))
+        Text(value, style = MaterialTheme.typography.bodyMedium, color = valueColor)
     }
 }

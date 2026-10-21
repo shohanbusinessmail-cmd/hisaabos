@@ -1,5 +1,6 @@
 package com.shohankhan.hisaabos.data.repo
 
+import androidx.room.withTransaction
 import com.shohankhan.hisaabos.data.db.AccountEntity
 import com.shohankhan.hisaabos.data.db.AccountBalanceRow
 import com.shohankhan.hisaabos.data.db.BudgetCategoryEntity
@@ -104,7 +105,44 @@ class HisaabRepository(
 
     suspend fun createShop(name: String): Long = shops.insert(ShopEntity(name = name.trim()))
 
+    suspend fun createShop(
+        name: String,
+        shopkeeperName: String?,
+        phone: String?,
+        openingBalanceMinor: Long,
+    ): Long = shops.insert(
+        ShopEntity(
+            name = name.trim(),
+            shopkeeperName = shopkeeperName?.trim()?.takeIf { it.isNotBlank() },
+            phone = phone?.trim()?.takeIf { it.isNotBlank() },
+            openingBalanceMinor = openingBalanceMinor,
+        ),
+    )
+
+    suspend fun updateShop(shop: ShopEntity) = shops.update(shop)
+    suspend fun archiveShop(id: Long, archived: Boolean) = shops.setArchived(id, archived)
+
     suspend fun createPerson(name: String): Long = people.insert(PersonEntity(name = name.trim()))
+
+    suspend fun dbInsertPerson(name: String, phone: String?): Long =
+        people.insert(PersonEntity(name = name.trim(), phone = phone?.trim()?.takeIf { it.isNotBlank() }))
+
+    suspend fun createAccount(
+        name: String,
+        type: com.shohankhan.hisaabos.domain.model.AccountType,
+        institution: String? = null,
+        isLiability: Boolean = false,
+        notes: String? = null,
+    ): Long = accounts.insert(
+        AccountEntity(
+            name = name.trim(),
+            type = type,
+            institution = institution?.trim()?.takeIf { it.isNotEmpty() },
+            isLiability = isLiability,
+            notes = notes?.takeIf { it.isNotBlank() },
+            sortOrder = accounts.maxSortOrder() + 1,
+        ),
+    )
 
     suspend fun updateAccount(account: AccountEntity) = accounts.update(account)
 
@@ -168,6 +206,14 @@ class HisaabRepository(
         offset = offset,
     )
 
+    suspend fun searchTransactions(text: String, limit: Int = 50): List<TxListItem> =
+        transactions.recent(limit).filter { item ->
+            listOfNotNull(
+                item.tx.title, item.tx.note, item.tx.partyName, item.accountName,
+                item.categoryName, item.shopName, item.personName,
+            ).any { it.contains(text, ignoreCase = true) }
+        }
+
     suspend fun accountTransactions(accountId: Long, limit: Int = 100) = transactions.forAccount(accountId, limit)
     suspend fun shopTransactions(shopId: Long) = transactions.forShop(shopId)
     suspend fun personTransactions(personId: Long) = transactions.forPerson(personId)
@@ -200,6 +246,7 @@ class HisaabRepository(
     fun observeLoans(): Flow<List<LoanEntity>> = loans.observeAll()
     fun observeLoans(kind: LoanKind): Flow<List<LoanEntity>> = loans.observeByKind(kind)
     fun observeLoan(id: Long): Flow<LoanEntity?> = loans.observeById(id)
+    suspend fun closeLoan(id: Long) = loans.setClosed(id, true, System.currentTimeMillis())
     suspend fun loan(id: Long): LoanEntity? = loans.byId(id)
 
     fun observeSchedule(ownerKind: ScheduleOwner, ownerId: Long): Flow<List<ScheduleItemEntity>> =
@@ -228,6 +275,44 @@ class HisaabRepository(
     fun observeReminders(): Flow<List<ReminderEntity>> = reminders.observeAll()
     fun observeOpenReminders(): Flow<List<ReminderEntity>> = reminders.observeOpen()
     fun observeRecurring(): Flow<List<RecurringRuleEntity>> = recurring.observeAll()
+    suspend fun createRecurring(rule: RecurringRuleEntity): Long = recurring.insert(rule)
+    suspend fun setRecurringActive(id: Long, active: Boolean) = recurring.setActive(id, active)
+    suspend fun updateRecurringNextRun(id: Long, nextRunDate: String) {
+        val rule = recurring.byId(id) ?: return
+        recurring.update(rule.copy(nextRunDate = nextRunDate, updatedAt = System.currentTimeMillis()))
+    }
+
+    suspend fun createReminder(reminder: ReminderEntity): Long = reminders.insert(reminder)
+    suspend fun setReminderDone(id: Long, done: Boolean) = reminders.setDone(id, done)
+
+    suspend fun createBudget(
+        name: String,
+        period: com.shohankhan.hisaabos.domain.model.BudgetPeriod,
+        startDate: String,
+        endDate: String?,
+        limitMinor: Long,
+        includeAllCategories: Boolean,
+        categoryIds: List<Long>,
+        note: String?,
+    ): Long = db.withTransaction {
+        val id = budgets.insert(
+            BudgetEntity(
+                name = name.trim(),
+                period = period,
+                startDate = startDate,
+                endDate = endDate,
+                limitMinor = limitMinor,
+                includeAllCategories = includeAllCategories,
+                note = note,
+            ),
+        )
+        if (categoryIds.isNotEmpty()) {
+            budgets.insertCategories(categoryIds.map { BudgetCategoryEntity(id, it) })
+        }
+        id
+    }
+
+    suspend fun archiveBudget(id: Long, archived: Boolean) = budgets.setArchived(id, archived)
     suspend fun recurringRules(): List<RecurringRuleEntity> = recurring.active()
 
     /**

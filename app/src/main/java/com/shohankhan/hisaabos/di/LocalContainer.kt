@@ -20,3 +20,15 @@ inline fun <reified T : ViewModel> appViewModel(crossinline create: (AppContaine
         },
     )
 }
+
+/** Same as [appViewModel] but scoped to a stable key, e.g. one per record id. */
+@Composable
+inline fun <reified T : ViewModel> appViewModel(key: String, crossinline create: (AppContainer) -> T): T {
+    val container = LocalAppContainer.current
+    return viewModel(
+        key = key,
+        factory = viewModelFactory {
+            initializer { create(container) }
+        },
+    )
+}
