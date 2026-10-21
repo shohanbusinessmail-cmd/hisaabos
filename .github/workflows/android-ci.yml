@@ -45,16 +45,47 @@ jobs:
         uses: gradle/actions/wrapper-validation@v4
 
       - name: Compile (Kotlin + resources)
-        run: ./gradlew :app:compileDebugKotlin --stacktrace
+        shell: bash
+        run: |
+          set -o pipefail
+          ./gradlew :app:compileDebugKotlin --stacktrace 2>&1 | tee build-compile.log
 
       - name: Unit tests (JVM + Robolectric)
-        run: ./gradlew :app:testDebugUnitTest --stacktrace
+        shell: bash
+        run: |
+          set -o pipefail
+          ./gradlew :app:testDebugUnitTest --stacktrace 2>&1 | tee build-test.log
 
       - name: Android lint
-        run: ./gradlew :app:lintDebug --stacktrace
+        shell: bash
+        run: |
+          set -o pipefail
+          ./gradlew :app:lintDebug --stacktrace 2>&1 | tee build-lint.log
 
       - name: Assemble debug APK
-        run: ./gradlew :app:assembleDebug --stacktrace
+        shell: bash
+        run: |
+          set -o pipefail
+          ./gradlew :app:assembleDebug --stacktrace 2>&1 | tee build-assemble.log
+
+      - name: Publish build logs as annotations
+        if: always()
+        shell: bash
+        run: |
+          shopt -s nullglob
+          for f in build-*.log; do
+            grep -E "^e: |^w: .*error|error:|FAILURE:|Execution failed|Caused by:|^> Task .*FAILED" "$f" | head -n 40 | while IFS= read -r line; do
+              printf '::error file=%s::%s\n' "$f" "${line:0:900}"
+            done
+          done
+
+      - name: Upload build logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-logs
+          path: build-*.log
+          if-no-files-found: ignore
 
       - name: Verify APK
         run: |
