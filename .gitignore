@@ -1,0 +1,25 @@
+# Android / Gradle
+*.iml
+.gradle/
+/local.properties
+/.idea/
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+app/build/
+build/
+*.hprof
+
+# Signing material must never be committed
+*.jks
+*.keystore
+keystore.properties
+release-signing/
+
+# Generated / local artifacts
+docs/icon-preview.png.tmp
+*.log
+/tmp/

@@ -1,0 +1,6 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="app_name">হিসাবওএস</string>
+    <string name="app_name_latin" translatable="false">HisaabOS</string>
+    <string name="owner_name" translatable="false">Shohan Khan</string>
+    <string name="owner_email" translatable="false">helloiamshohan@gmail.com</string>
+</resources>

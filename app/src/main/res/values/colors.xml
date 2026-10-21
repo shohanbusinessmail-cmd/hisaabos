@@ -1,0 +1,16 @@
+<resources>
+    <color name="brand_emerald">#087443</color>
+    <color name="brand_emerald_deep">#065A35</color>
+    <color name="brand_emerald_light">#E8F6ED</color>
+    <color name="app_background">#F7FAF8</color>
+    <color name="card_surface">#FFFFFF</color>
+    <color name="text_primary">#17231C</color>
+    <color name="text_secondary">#68766E</color>
+    <color name="divider">#E5ECE7</color>
+    <color name="expense_red">#B3261E</color>
+    <color name="warning_amber">#8A5A00</color>
+    <color name="info_blue">#3A5A78</color>
+    <color name="ic_launcher_background">#087443</color>
+    <color name="black">#000000</color>
+    <color name="white">#FFFFFF</color>
+</resources>
